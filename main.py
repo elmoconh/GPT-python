@@ -9,7 +9,8 @@ def main():
     openai.api_key = config.api_key
     
     #Inicializamos chatGPT
-    messages=[{"role":"system","content": "Hola mundo"}]
+    context= {"role":"system","content": "Hola mundo"}
+    messages=[context]
 
     print("💬 [bold green]ChatGPT API en Python[/bold green]")
 
@@ -20,13 +21,17 @@ def main():
     print(table)
 
     while True:
-        content = input("¿sobre que quieres hablar? :")
-        
+        content = __prompt()
+
         #Se guardan Mensajes usuario
         messages.append({"role": "user", "content": content})
 
-        if content == "exit":
-            break
+
+
+        if content == "new":
+            print("🆕 Nueva conversación creada")
+            messages = [context]
+            content = __prompt()
 
         response =openai.ChatCompletion.create(model="gpt-3.5-turbo-0301", 
                                     messages=messages)
@@ -37,6 +42,17 @@ def main():
         print(response.choices[0].message.content)
 
 
+def __prompt() -> str:
+    prompt = typer.prompt("\n¿Sobre qué quieres hablar? ")
 
+    if prompt == "exit":
+        exit = typer.confirm("✋ ¿Estás seguro?")
+        if exit:
+            print("👋 ¡Hasta luego!")
+            raise typer.Abort()
+
+        return __prompt()
+
+    return prompt
 if __name__ == "__main__":
     typer.run(main)
